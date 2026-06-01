@@ -738,6 +738,9 @@
 </div>
 
 <script>
+// ─── CONFIG ───────────────────────────────────────────────────────────
+const SHEETS_API = 'https://script.google.com/macros/s/AKfycbwAcfaQthiS4z7BpmlNyK8bw0TgTzeJs6jccX4A2CMrg8l-_TLvHyP3uyzqJXO89aU9_g/exec';
+
 // ─── STATE ───────────────────────────────────────────────────────────
 const STATE = {
   step: 1,
@@ -745,22 +748,26 @@ const STATE = {
   selectedSlot: null,
   tipo: null,
   files: [],
-  // Persistent reservations (localStorage)
-  reservations: {}
+  reservations: [] // array of reserved slot keys from Google Sheets
 };
 
-// Load reservations from localStorage
-function loadReservations() {
+// ─── GOOGLE SHEETS API ───────────────────────────────────────────────
+async function loadReservations() {
   try {
-    const saved = localStorage.getItem('gyc_capacitacion_reservations_jun2025');
-    if (saved) STATE.reservations = JSON.parse(saved);
-  } catch(e) {}
+    const res = await fetch(SHEETS_API, { method: 'GET' });
+    const data = await res.json();
+    STATE.reservations = data.reserved || [];
+  } catch(e) {
+    STATE.reservations = [];
+  }
 }
 
-function saveReservations() {
-  try {
-    localStorage.setItem('gyc_capacitacion_reservations_jun2025', JSON.stringify(STATE.reservations));
-  } catch(e) {}
+async function saveReservation(payload) {
+  const res = await fetch(SHEETS_API, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'reserve', ...payload })
+  });
+  return await res.json();
 }
 
 // ─── SCHEDULE CONFIG ─────────────────────────────────────────────────
@@ -825,7 +832,7 @@ function renderSlots() {
     const allSlots = [...MORNING_SLOTS, ...AFTERNOON_SLOTS];
     allSlots.forEach(slot => {
       const slotKey = `${day.key}-${slot}`;
-      const isReserved = !!STATE.reservations[slotKey];
+      const isReserved = STATE.reservations.includes(slotKey);
       const { label } = fmt(slot);
 
       const btn = document.createElement('button');
@@ -932,7 +939,12 @@ function goToStep(n) {
     else if (i < n) el.classList.add('done');
   }
 
-  if (n === 2) renderSlots();
+  if (n === 2) {
+    // Show loading state while fetching from Sheets
+    const container = document.getElementById('slots-container');
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px"><span class="spinner" style="border-top-color:var(--teal);border-color:rgba(0,201,167,0.2)"></span> Cargando disponibilidad en tiempo real...</div>';
+    loadReservations().then(() => renderSlots());
+  }
   if (n === 4) buildSummary();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1067,31 +1079,53 @@ async function confirmReserva() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Procesando reserva...';
 
-  // Double-check slot is still available
   const slotKey = STATE.selectedSlot.key;
-  loadReservations();
-  if (STATE.reservations[slotKey]) {
-    document.getElementById('err-4').textContent = '⚠️ Este espacio acaba de ser reservado por otra persona. Por favor regresa al paso 2 y elige otro horario.';
+  const nombre = document.getElementById('nombre').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const cargo = document.getElementById('cargo').value.trim();
+
+  // Build detalle
+  let detalle = '';
+  if (STATE.tipo === 'especifica') detalle = document.getElementById('desc-especifica').value.trim();
+  if (STATE.tipo === 'reentrenamiento') detalle = document.getElementById('desc-reentrenamiento').value.trim();
+  if (STATE.tipo === 'mejora') {
+    const mod = document.getElementById('modulo').value.trim();
+    const her = document.getElementById('herramienta').value.trim();
+    const desc = document.getElementById('desc-mejora').value.trim();
+    detalle = `Módulo: ${mod} | Herramienta: ${her} | ${desc}`;
+  }
+  const notas = document.getElementById('notas').value.trim();
+  if (notas) detalle += (detalle ? ' | Notas: ' : 'Notas: ') + notas;
+
+  try {
+    const result = await saveReservation({
+      slot: slotKey,
+      nombre, cargo, email,
+      modalidad: STATE.modality,
+      tipo: STATE.tipo,
+      detalle
+    });
+
+    if (!result.success && result.error === 'slot_taken') {
+      document.getElementById('err-4').textContent = '⚠️ Este espacio acaba de ser reservado por otra persona. Por favor regresa al paso 2 y elige otro horario.';
+      document.getElementById('err-4').classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = '✓ Confirmar reserva';
+      setTimeout(() => goToStep(2), 2500);
+      return;
+    }
+
+    if (!result.success) throw new Error(result.error);
+
+  } catch(e) {
+    document.getElementById('err-4').textContent = '⚠️ Error al conectar con el servidor. Verifica tu conexión e intenta de nuevo.';
     document.getElementById('err-4').classList.add('show');
     btn.disabled = false;
     btn.innerHTML = '✓ Confirmar reserva';
-    setTimeout(() => goToStep(2), 2500);
     return;
   }
 
-  // Reserve the slot
-  STATE.reservations[slotKey] = {
-    nombre: document.getElementById('nombre').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    ts: new Date().toISOString()
-  };
-  saveReservations();
-
-  // Simulate slight delay (API call)
-  await new Promise(r => setTimeout(r, 1200));
-
   // Show success
-  const nombre = document.getElementById('nombre').value.trim();
   const slot = STATE.selectedSlot;
   const { label } = fmt(slot.slot);
 
@@ -1105,7 +1139,6 @@ async function confirmReserva() {
   }
 
   goToStep(5);
-  // Update step nav to show all done
   for (let i = 1; i <= 4; i++) {
     const el = document.getElementById(`step-nav-${i}`);
     el.classList.remove('active');
@@ -1114,6 +1147,7 @@ async function confirmReserva() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────
+// Preload reservations silently on page load
 loadReservations();
 </script>
 </body>
