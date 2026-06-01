@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda tu Capacitación — GYC Médicas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #112240;
+    --navy-light: #1a3a5c;
+    --teal: #00c9a7;
+    --teal-dim: #00a88a;
+    --gold: #f0c040;
+    --white: #f5f7fa;
+    --text: #ccd6f6;
+    --text-dim: #8892b0;
+    --danger: #ff6b6b;
+    --success: #00c9a7;
+    --card-bg: rgba(17, 34, 64, 0.85);
+    --border: rgba(0, 201, 167, 0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Background mesh */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,201,167,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 80%, rgba(17,34,64,0.9) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,201,167,0.03) 40px, rgba(0,201,167,0.03) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,201,167,0.03) 40px, rgba(0,201,167,0.03) 41px);
+    pointer-events: none;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    padding: 48px 0 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .logo-line {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+    opacity: 0.85;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  header h1 em { color: var(--teal); font-style: italic; }
+  header p {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-weight: 300;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* STEPS */
+  .steps-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 40px;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    transition: color 0.3s;
+  }
+  .step-item.active { color: var(--teal); }
+  .step-item.done { color: var(--text-dim); }
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+  .step-item.active .step-num {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--navy);
+  }
+  .step-item.done .step-num {
+    background: var(--teal-dim);
+    border-color: var(--teal-dim);
+    color: var(--navy);
+  }
+  .step-connector {
+    width: 40px; height: 1px;
+    background: var(--border);
+    margin: 0 6px;
+  }
+
+  /* PANELS */
+  .panel {
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+  .panel.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(12px);
+  }
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* FORM FIELDS */
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 7px;
+  }
+  input[type="text"], input[type="email"], textarea, select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(0,201,167,0.2);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--teal);
+    background: rgba(0,201,167,0.05);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-dim); opacity: 0.6; }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  select option { background: var(--navy-mid); color: var(--white); }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .field-row.single { grid-template-columns: 1fr; }
+  .field-group { margin-bottom: 16px; }
+
+  /* MODALITY TOGGLE */
+  .modality-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .modality-btn {
+    flex: 1;
+    padding: 11px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,201,167,0.2);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .modality-btn.selected {
+    background: rgba(0,201,167,0.12);
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  /* TRAINING TYPE RADIOS */
+  .radio-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 0; }
+  .radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    border-radius: 9px;
+    border: 1px solid rgba(0,201,167,0.15);
+    background: rgba(255,255,255,0.02);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .radio-item:hover { border-color: rgba(0,201,167,0.35); background: rgba(0,201,167,0.04); }
+  .radio-item input[type="radio"] { display: none; }
+  .radio-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,201,167,0.4);
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .radio-dot::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--teal);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .radio-item.checked { border-color: var(--teal); background: rgba(0,201,167,0.07); }
+  .radio-item.checked .radio-dot { border-color: var(--teal); }
+  .radio-item.checked .radio-dot::after { opacity: 1; }
+  .radio-label-text { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .radio-label-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* SLOT GRID */
+  .day-block { margin-bottom: 28px; }
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .day-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    color: var(--white);
+  }
+  .day-date {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .day-line { flex: 1; height: 1px; background: var(--border); }
+
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 9px;
+  }
+  .slot-btn {
+    position: relative;
+    padding: 12px 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(0,201,167,0.25);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .slot-btn:hover:not(:disabled) {
+    border-color: var(--teal);
+    background: rgba(0,201,167,0.1);
+    color: var(--teal);
+    transform: translateY(-1px);
+  }
+  .slot-btn.selected {
+    border-color: var(--teal);
+    background: rgba(0,201,167,0.18);
+    color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(0,201,167,0.12);
+  }
+  .slot-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.01);
+    color: var(--text-dim);
+  }
+  .slot-btn:disabled::after {
+    content: 'Ocupado';
+    display: block;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    color: var(--danger);
+    margin-top: 3px;
+    opacity: 0.7;
+  }
+  .slot-time-range { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .slot-btn.selected .slot-time-range { color: rgba(0,201,167,0.7); }
+
+  /* SCREENSHOT UPLOAD */
+  .upload-zone {
+    border: 1.5px dashed rgba(0,201,167,0.25);
+    border-radius: 9px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .upload-zone:hover { border-color: var(--teal); background: rgba(0,201,167,0.04); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 24px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--text-dim); }
+  .upload-text strong { color: var(--teal); }
+  .file-list { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .file-chip {
+    background: rgba(0,201,167,0.1);
+    border: 1px solid rgba(0,201,167,0.25);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--teal);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .file-chip button {
+    background: none; border: none; color: var(--teal);
+    cursor: pointer; padding: 0; font-size: 13px; line-height: 1;
+    opacity: 0.7;
+  }
+  .file-chip button:hover { opacity: 1; }
+
+  /* SUMMARY */
+  .summary-box {
+    background: rgba(0,201,167,0.06);
+    border: 1px solid rgba(0,201,167,0.2);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .summary-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .summary-row:last-child { margin-bottom: 0; }
+  .summary-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .summary-label { font-weight: 600; color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-value { color: var(--white); margin-top: 2px; }
+
+  /* BUTTONS */
+  .btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    border-radius: 9px;
+    border: none;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+    color: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,201,167,0.25); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(0,201,167,0.35); color: var(--text); }
+
+  .btn-row { display: flex; gap: 12px; align-items: center; }
+  .btn-row .btn-primary { flex: 1; }
+
+  /* SUCCESS */
+  .success-wrap {
+    text-align: center;
+    padding: 60px 20px 40px;
+  }
+  .success-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: rgba(0,201,167,0.12);
+    border: 2px solid var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 24px;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .success-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+  .success-sub { color: var(--text-dim); font-size: 14px; line-height: 1.6; max-width: 400px; margin: 0 auto 28px; }
+  .meet-link-box {
+    background: rgba(0,201,167,0.08);
+    border: 1px solid rgba(0,201,167,0.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 0 auto 24px;
+    max-width: 480px;
+    word-break: break-all;
+    font-size: 12px;
+    color: var(--teal);
+  }
+  .meet-link-box strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 6px; }
+
+  /* ERROR */
+  .error-msg {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 12px;
+    color: #ff9a9a;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* LOADING */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(10,22,40,0.4);
+    border-top-color: var(--navy);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* CONDITIONAL FIELDS */
+  .conditional { display: none; margin-top: 14px; }
+  .conditional.show { display: block; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 32px 0 24px;
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0.5;
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 20px 18px; }
+    .field-row { grid-template-columns: 1fr; }
+    .slots-grid { grid-template-columns: repeat(3, 1fr); }
+    header { padding: 32px 0 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-line">GYC Médicas SAS · Desarrollo Interno</div>
+    <h1>Agenda tu <em>Capacitación</em></h1>
+    <p>Reserva tu espacio personal de una hora con el instructor. Semana del 9 al 12 de junio de 2025.</p>
+  </header>
+
+  <!-- STEP NAV -->
+  <div class="steps-nav">
+    <div class="step-item active" id="step-nav-1">
+      <div class="step-num">1</div>
+      <span>Tus datos</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-nav-2">
+      <div class="step-num">2</div>
+      <span>Tu espacio</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-nav-3">
+      <div class="step-num">3</div>
+      <span>Tu solicitud</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-nav-4">
+      <div class="step-num">4</div>
+      <span>Confirmar</span>
+    </div>
+  </div>
+
+  <!-- PANEL 1: DATOS PERSONALES -->
+  <div class="panel active" id="panel-1">
+    <div class="card">
+      <div class="card-title">Información Personal</div>
+      <div class="card-sub">Completa tus datos. La confirmación llegará a tu correo corporativo.</div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="nombre">Nombre completo</label>
+          <input type="text" id="nombre" placeholder="Ej. María González">
+        </div>
+        <div class="field-group">
+          <label for="cargo">Cargo</label>
+          <input type="text" id="cargo" placeholder="Ej. Ingeniera Biomédica">
+        </div>
+      </div>
+
+      <div class="field-row single">
+        <div class="field-group">
+          <label for="email">Correo corporativo (@zohomail)</label>
+          <input type="email" id="email" placeholder="tunombre@gyemedicas.com">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Modalidad de capacitación</label>
+        <div class="modality-toggle">
+          <button class="modality-btn selected" onclick="selectModality('virtual', this)" type="button">
+            🖥️ Virtual (videollamada)
+          </button>
+          <button class="modality-btn" onclick="selectModality('presencial', this)" type="button">
+            🏢 Presencial (sede)
+          </button>
+        </div>
+      </div>
+
+      <div id="virtual-info" style="background:rgba(0,201,167,0.05);border:1px solid rgba(0,201,167,0.15);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.5;">
+        📎 Al completar tu reserva recibirás el <strong style="color:var(--teal)">enlace personal de Google Meet</strong> en tu correo. La sesión es 1 a 1 con el instructor.
+      </div>
+      <div id="presencial-info" style="display:none;background:rgba(240,192,64,0.05);border:1px solid rgba(240,192,64,0.15);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.5;">
+        🏢 Tu sesión se realizará en la <strong style="color:var(--gold)">sede de GYC Médicas</strong>. El instructor te confirmará el aula disponible.
+      </div>
+
+      <div class="error-msg" id="err-1">Por favor completa todos los campos requeridos.</div>
+      <button class="btn-primary" onclick="goToStep(2)">Siguiente — Elegir horario →</button>
+    </div>
+  </div>
+
+  <!-- PANEL 2: SLOTS -->
+  <div class="panel" id="panel-2">
+    <div class="card">
+      <div class="card-title">Selecciona tu Espacio</div>
+      <div class="card-sub">Elige un bloque disponible. Los espacios marcados como <span style="color:var(--danger);font-weight:600">Ocupado</span> ya fueron reservados.</div>
+
+      <div id="slots-container">
+        <!-- Generated by JS -->
+      </div>
+
+      <div class="error-msg" id="err-2">Selecciona un horario para continuar.</div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goToStep(1)">← Volver</button>
+        <button class="btn-primary" onclick="goToStep(3)">Siguiente — Mi solicitud →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: SOLICITUD -->
+  <div class="panel" id="panel-3">
+    <div class="card">
+      <div class="card-title">¿Qué necesitas?</div>
+      <div class="card-sub">Cuéntanos el objetivo de tu sesión para preparar mejor la capacitación.</div>
+
+      <div class="field-group">
+        <label>Tipo de solicitud</label>
+        <div class="radio-group" id="tipo-radio">
+          <label class="radio-item" onclick="selectTipo('especifica', this)">
+            <input type="radio" name="tipo" value="especifica">
+            <div class="radio-dot"></div>
+            <div>
+              <div class="radio-label-text">🎯 Capacitación específica</div>
+              <div class="radio-label-sub">Tengo un tema o herramienta concreta que quiero aprender.</div>
+            </div>
+          </label>
+          <label class="radio-item" onclick="selectTipo('reentrenamiento', this)">
+            <input type="radio" name="tipo" value="reentrenamiento">
+            <div class="radio-dot"></div>
+            <div>
+              <div class="radio-label-text">🔄 Reentrenamiento total</div>
+              <div class="radio-label-sub">Necesito reforzar o repasar todo el proceso desde cero.</div>
+            </div>
+          </label>
+          <label class="radio-item" onclick="selectTipo('mejora', this)">
+            <input type="radio" name="tipo" value="mejora">
+            <div class="radio-dot"></div>
+            <div>
+              <div class="radio-label-text">💡 Sugerencia o solicitud de mejora</div>
+              <div class="radio-label-sub">Tengo una idea para mejorar una herramienta o proceso.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Capacitación específica -->
+      <div class="conditional" id="cond-especifica">
+        <div class="field-group">
+          <label>Describe qué necesitas aprender</label>
+          <textarea id="desc-especifica" placeholder="Ej. Quiero aprender a generar reportes de mantenimiento preventivo en Odoo, específicamente el módulo de activos fijos..."></textarea>
+        </div>
+      </div>
+
+      <!-- Reentrenamiento total -->
+      <div class="conditional" id="cond-reentrenamiento">
+        <div class="field-group">
+          <label>¿Sobre qué proceso o sistema completo?</label>
+          <textarea id="desc-reentrenamiento" placeholder="Ej. Todo el proceso de registro y seguimiento de equipos biomédicos en el sistema..."></textarea>
+        </div>
+      </div>
+
+      <!-- Mejora -->
+      <div class="conditional" id="cond-mejora">
+        <div class="field-row">
+          <div class="field-group">
+            <label>Módulo o área</label>
+            <input type="text" id="modulo" placeholder="Ej. Módulo de Mantenimiento">
+          </div>
+          <div class="field-group">
+            <label>Herramienta o sistema</label>
+            <input type="text" id="herramienta" placeholder="Ej. Odoo, Excel, App de trazabilidad">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Describe tu sugerencia o solicitud</label>
+          <textarea id="desc-mejora" placeholder="Ej. En el módulo de activos, sería útil poder filtrar por fecha de última calibración y ver el historial del equipo sin tener que abrir cada registro individualmente..."></textarea>
+        </div>
+        <div class="field-group">
+          <label>Adjuntar screenshots (opcional)</label>
+          <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" multiple accept="image/*,.pdf" onchange="handleFiles(this)">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text">
+              <strong>Haz clic para subir</strong> o arrastra aquí<br>
+              <span style="font-size:11px">PNG, JPG, PDF — Máx. 5 archivos</span>
+            </div>
+          </div>
+          <div class="file-list" id="file-list"></div>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-top:16px">
+        <label>Notas adicionales (opcional)</label>
+        <textarea id="notas" placeholder="Cualquier contexto adicional que quieras compartir con el instructor..."></textarea>
+      </div>
+
+      <div class="error-msg" id="err-3">Por favor indica el tipo de solicitud y completa los campos requeridos.</div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goToStep(2)">← Volver</button>
+        <button class="btn-primary" onclick="goToStep(4)">Siguiente — Revisar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: CONFIRMACIÓN -->
+  <div class="panel" id="panel-4">
+    <div class="card">
+      <div class="card-title">Revisa tu Reserva</div>
+      <div class="card-sub">Confirma que todo esté correcto antes de reservar tu espacio.</div>
+
+      <div class="summary-box" id="summary-box">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="error-msg" id="err-4"></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goToStep(3)">← Editar</button>
+        <button class="btn-primary" id="btn-confirm" onclick="confirmReserva()">
+          ✓ Confirmar reserva
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 5: ÉXITO -->
+  <div class="panel" id="panel-5">
+    <div class="card success-wrap">
+      <div class="success-icon">✓</div>
+      <div class="success-title">¡Reserva confirmada!</div>
+      <div class="success-sub" id="success-sub"></div>
+      <div class="meet-link-box" id="meet-link-box" style="display:none">
+        <strong>Tu enlace personal de Google Meet</strong>
+        <span id="meet-link-text"></span>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:8px">📧 Hemos enviado la confirmación a tu correo corporativo.</p>
+      <p style="font-size:12px;color:var(--text-dim)">Si tienes dudas, comunícate con el equipo de GYC Médicas.</p>
+    </div>
+  </div>
+
+  <footer>GYC Médicas SAS · Sistema de Agenda de Capacitaciones · 2025</footer>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────
+const STATE = {
+  step: 1,
+  modality: 'virtual',
+  selectedSlot: null,
+  tipo: null,
+  files: [],
+  // Persistent reservations (localStorage)
+  reservations: {}
+};
+
+// Load reservations from localStorage
+function loadReservations() {
+  try {
+    const saved = localStorage.getItem('gyc_capacitacion_reservations_jun2025');
+    if (saved) STATE.reservations = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function saveReservations() {
+  try {
+    localStorage.setItem('gyc_capacitacion_reservations_jun2025', JSON.stringify(STATE.reservations));
+  } catch(e) {}
+}
+
+// ─── SCHEDULE CONFIG ─────────────────────────────────────────────────
+const DAYS = [
+  { key: 'lun09', label: 'Lunes', date: '9 de junio' },
+  { key: 'mar10', label: 'Martes', date: '10 de junio' },
+  { key: 'mie11', label: 'Miércoles', date: '11 de junio' },
+  { key: 'jue12', label: 'Jueves', date: '12 de junio' }
+];
+
+const MORNING_SLOTS = ['9:00', '10:00', '11:00', '12:00'];
+const AFTERNOON_SLOTS = ['14:00', '15:00'];
+
+function fmt(h) {
+  const [hh, mm] = h.split(':');
+  const start = `${hh}:${mm}`;
+  const endH = parseInt(hh) + 1;
+  return { start, end: `${endH}:${mm}`, label: `${start} – ${endH}:${mm}` };
+}
+
+// Generate unique Meet-like links per slot
+function generateMeetLink(dayKey, slot) {
+  const codes = {
+    'lun09-9:00': 'qxp-nvrt-bkj', 'lun09-10:00': 'wms-fjal-cyr',
+    'lun09-11:00': 'dnk-brqz-hpv', 'lun09-12:00': 'tgc-xwlm-suf',
+    'lun09-14:00': 'yrb-kqcn-jdw', 'lun09-15:00': 'plh-vzxg-mnt',
+    'mar10-9:00': 'fwj-cqpd-rxb', 'mar10-10:00': 'bvn-htgk-ysz',
+    'mar10-11:00': 'kcm-xrpf-dlw', 'mar10-12:00': 'gjd-bnvt-qhx',
+    'mar10-14:00': 'snr-yzfp-wkc', 'mar10-15:00': 'vhb-cjxm-qtd',
+    'mie11-9:00': 'prf-wdkz-bhn', 'mie11-10:00': 'txc-jmvq-gsp',
+    'mie11-11:00': 'lqw-phyb-ncf', 'mie11-12:00': 'dkv-rtcm-xwj',
+    'mie11-14:00': 'ynh-fxqz-bcp', 'mie11-15:00': 'mwg-kslp-rtv',
+    'jue12-9:00': 'czb-vfnk-pqj', 'jue12-10:00': 'hds-wrmy-gxf',
+    'jue12-11:00': 'jqp-ncbv-ktz', 'jue12-12:00': 'xkm-ghdr-ywc',
+    'jue12-14:00': 'bft-pvwq-nzs', 'jue12-15:00': 'wrn-jkxc-dpm'
+  };
+  const code = codes[`${dayKey}-${slot}`] || 'xxx-yyyy-zzz';
+  return `https://meet.google.com/${code}`;
+}
+
+// ─── SLOT RENDERING ──────────────────────────────────────────────────
+function renderSlots() {
+  const container = document.getElementById('slots-container');
+  container.innerHTML = '';
+
+  DAYS.forEach(day => {
+    const block = document.createElement('div');
+    block.className = 'day-block';
+
+    const header = document.createElement('div');
+    header.className = 'day-header';
+    header.innerHTML = `
+      <span class="day-name">${day.label}</span>
+      <span class="day-date">${day.date}</span>
+      <div class="day-line"></div>
+    `;
+    block.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'slots-grid';
+
+    const allSlots = [...MORNING_SLOTS, ...AFTERNOON_SLOTS];
+    allSlots.forEach(slot => {
+      const slotKey = `${day.key}-${slot}`;
+      const isReserved = !!STATE.reservations[slotKey];
+      const { label } = fmt(slot);
+
+      const btn = document.createElement('button');
+      btn.className = 'slot-btn';
+      btn.dataset.slotKey = slotKey;
+      btn.dataset.day = day.label;
+      btn.dataset.date = day.date;
+      btn.dataset.slot = slot;
+      btn.innerHTML = `<div>${slot.replace(':00', ':00 h')}</div><div class="slot-time-range">${label}</div>`;
+
+      if (isReserved) {
+        btn.disabled = true;
+      } else {
+        btn.addEventListener('click', () => selectSlot(slotKey, btn, day, slot));
+      }
+
+      if (STATE.selectedSlot && STATE.selectedSlot.key === slotKey) {
+        btn.classList.add('selected');
+      }
+
+      grid.appendChild(btn);
+    });
+
+    // Add separator
+    const sep = document.createElement('div');
+    sep.style.cssText = 'grid-column:1/-1;height:1px;background:var(--border);margin:4px 0;';
+    // insert before afternoon
+    grid.insertBefore(sep, grid.children[4]);
+
+    block.appendChild(grid);
+    container.appendChild(block);
+  });
+}
+
+function selectSlot(key, btn, day, slot) {
+  // Deselect previous
+  document.querySelectorAll('.slot-btn.selected').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  STATE.selectedSlot = { key, day: day.label, date: day.date, slot, meetLink: generateMeetLink(day.key, slot) };
+}
+
+// ─── MODALITY ────────────────────────────────────────────────────────
+function selectModality(val, btn) {
+  STATE.modality = val;
+  document.querySelectorAll('.modality-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('virtual-info').style.display = val === 'virtual' ? 'block' : 'none';
+  document.getElementById('presencial-info').style.display = val === 'presencial' ? 'block' : 'none';
+}
+
+// ─── TIPO RADIO ──────────────────────────────────────────────────────
+function selectTipo(val, el) {
+  STATE.tipo = val;
+  document.querySelectorAll('.radio-item').forEach(r => r.classList.remove('checked'));
+  el.classList.add('checked');
+  ['especifica', 'reentrenamiento', 'mejora'].forEach(t => {
+    const cond = document.getElementById(`cond-${t}`);
+    cond.classList.toggle('show', t === val);
+  });
+}
+
+// ─── FILE UPLOAD ──────────────────────────────────────────────────────
+function handleFiles(input) {
+  const newFiles = Array.from(input.files).slice(0, 5 - STATE.files.length);
+  STATE.files = [...STATE.files, ...newFiles].slice(0, 5);
+  renderFileList();
+  input.value = '';
+}
+
+function renderFileList() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = '';
+  STATE.files.forEach((f, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `📄 ${f.name.length > 22 ? f.name.slice(0,20)+'…' : f.name} <button onclick="removeFile(${i})">×</button>`;
+    list.appendChild(chip);
+  });
+}
+
+function removeFile(i) {
+  STATE.files.splice(i, 1);
+  renderFileList();
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────
+function goToStep(n) {
+  // Validate current step
+  if (n > STATE.step) {
+    if (!validateStep(STATE.step)) return;
+  }
+
+  STATE.step = n;
+
+  document.querySelectorAll('.panel').forEach((p, i) => {
+    p.classList.toggle('active', i + 1 === n);
+  });
+
+  // Update step nav
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById(`step-nav-${i}`);
+    el.classList.remove('active', 'done');
+    if (i === n) el.classList.add('active');
+    else if (i < n) el.classList.add('done');
+  }
+
+  if (n === 2) renderSlots();
+  if (n === 4) buildSummary();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validateStep(step) {
+  hideErrors();
+  if (step === 1) {
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const cargo = document.getElementById('cargo').value.trim();
+    if (!nombre || !email || !cargo) {
+      document.getElementById('err-1').classList.add('show');
+      return false;
+    }
+    if (!email.includes('@')) {
+      document.getElementById('err-1').textContent = 'Por favor ingresa un correo válido.';
+      document.getElementById('err-1').classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  if (step === 2) {
+    if (!STATE.selectedSlot) {
+      document.getElementById('err-2').classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  if (step === 3) {
+    if (!STATE.tipo) {
+      document.getElementById('err-3').classList.add('show');
+      return false;
+    }
+    if (STATE.tipo === 'especifica' && !document.getElementById('desc-especifica').value.trim()) {
+      document.getElementById('err-3').textContent = 'Por favor describe qué necesitas aprender.';
+      document.getElementById('err-3').classList.add('show');
+      return false;
+    }
+    if (STATE.tipo === 'reentrenamiento' && !document.getElementById('desc-reentrenamiento').value.trim()) {
+      document.getElementById('err-3').textContent = 'Por favor describe el proceso a reentrenar.';
+      document.getElementById('err-3').classList.add('show');
+      return false;
+    }
+    if (STATE.tipo === 'mejora' && (!document.getElementById('modulo').value.trim() || !document.getElementById('desc-mejora').value.trim())) {
+      document.getElementById('err-3').textContent = 'Completa el módulo y la descripción de tu sugerencia.';
+      document.getElementById('err-3').classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  return true;
+}
+
+function hideErrors() {
+  document.querySelectorAll('.error-msg').forEach(e => {
+    e.classList.remove('show');
+    e.textContent = e.dataset.default || e.textContent;
+  });
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────────────────
+const TIPO_LABELS = {
+  especifica: '🎯 Capacitación específica',
+  reentrenamiento: '🔄 Reentrenamiento total',
+  mejora: '💡 Sugerencia / mejora'
+};
+
+function buildSummary() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const cargo = document.getElementById('cargo').value.trim();
+  const slot = STATE.selectedSlot;
+  const { label } = fmt(slot.slot);
+
+  let detalle = '';
+  if (STATE.tipo === 'especifica') detalle = document.getElementById('desc-especifica').value.trim();
+  if (STATE.tipo === 'reentrenamiento') detalle = document.getElementById('desc-reentrenamiento').value.trim();
+  if (STATE.tipo === 'mejora') {
+    const mod = document.getElementById('modulo').value.trim();
+    const her = document.getElementById('herramienta').value.trim();
+    const desc = document.getElementById('desc-mejora').value.trim();
+    detalle = `${mod} · ${her}\n${desc}`;
+  }
+
+  const box = document.getElementById('summary-box');
+  box.innerHTML = `
+    <div class="summary-row">
+      <div class="summary-icon">👤</div>
+      <div>
+        <div class="summary-label">Participante</div>
+        <div class="summary-value">${nombre} · ${cargo}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${email}</div>
+      </div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-icon">📅</div>
+      <div>
+        <div class="summary-label">Fecha y hora</div>
+        <div class="summary-value">${slot.day} ${slot.date} · ${label}</div>
+      </div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-icon">${STATE.modality === 'virtual' ? '🖥️' : '🏢'}</div>
+      <div>
+        <div class="summary-label">Modalidad</div>
+        <div class="summary-value">${STATE.modality === 'virtual' ? 'Virtual — Google Meet (enlace personal)' : 'Presencial — Sede GYC Médicas'}</div>
+      </div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-icon">📋</div>
+      <div>
+        <div class="summary-label">Tipo de solicitud</div>
+        <div class="summary-value">${TIPO_LABELS[STATE.tipo]}</div>
+        ${detalle ? `<div style="font-size:12px;color:var(--text-dim);margin-top:3px;white-space:pre-line">${detalle.slice(0,120)}${detalle.length > 120 ? '…' : ''}</div>` : ''}
+      </div>
+    </div>
+    ${STATE.files.length > 0 ? `
+    <div class="summary-row">
+      <div class="summary-icon">📎</div>
+      <div>
+        <div class="summary-label">Archivos adjuntos</div>
+        <div class="summary-value">${STATE.files.length} archivo(s)</div>
+      </div>
+    </div>` : ''}
+  `;
+}
+
+// ─── CONFIRM ─────────────────────────────────────────────────────────
+async function confirmReserva() {
+  const btn = document.getElementById('btn-confirm');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Procesando reserva...';
+
+  // Double-check slot is still available
+  const slotKey = STATE.selectedSlot.key;
+  loadReservations();
+  if (STATE.reservations[slotKey]) {
+    document.getElementById('err-4').textContent = '⚠️ Este espacio acaba de ser reservado por otra persona. Por favor regresa al paso 2 y elige otro horario.';
+    document.getElementById('err-4').classList.add('show');
+    btn.disabled = false;
+    btn.innerHTML = '✓ Confirmar reserva';
+    setTimeout(() => goToStep(2), 2500);
+    return;
+  }
+
+  // Reserve the slot
+  STATE.reservations[slotKey] = {
+    nombre: document.getElementById('nombre').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    ts: new Date().toISOString()
+  };
+  saveReservations();
+
+  // Simulate slight delay (API call)
+  await new Promise(r => setTimeout(r, 1200));
+
+  // Show success
+  const nombre = document.getElementById('nombre').value.trim();
+  const slot = STATE.selectedSlot;
+  const { label } = fmt(slot.slot);
+
+  document.getElementById('success-sub').textContent =
+    `${nombre}, tu sesión del ${slot.day} ${slot.date} de ${label} está confirmada. Revisa tu correo.`;
+
+  if (STATE.modality === 'virtual') {
+    const linkBox = document.getElementById('meet-link-box');
+    linkBox.style.display = 'block';
+    document.getElementById('meet-link-text').textContent = slot.meetLink;
+  }
+
+  goToStep(5);
+  // Update step nav to show all done
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById(`step-nav-${i}`);
+    el.classList.remove('active');
+    el.classList.add('done');
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+loadReservations();
+</script>
+</body>
+</html>
